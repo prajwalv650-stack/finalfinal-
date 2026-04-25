@@ -816,7 +816,11 @@ async function callGemini(userText){
     const resp = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: userText })
+      body: JSON.stringify({ 
+        prompt: userText,
+        preferredModel: null,  // Or specify: 'models/gemini-2.5-flash'
+        maxRetries: 6          // Try all available models if needed
+      })
     });
 
     if (!resp.ok) {
@@ -827,6 +831,11 @@ async function callGemini(userText){
     const data = await resp.json();
     if (!data.result) {
       throw new Error('No response from API');
+    }
+
+    // Log model used (optional debugging)
+    if (data.metadata) {
+      console.log(`✓ Used model: ${data.metadata.model} (Attempt ${data.metadata.attempts}, ${data.metadata.responseTime}ms)`);
     }
 
     return data.result;
